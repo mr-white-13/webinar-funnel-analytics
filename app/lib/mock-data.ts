@@ -10,8 +10,8 @@ export const overviewCards = [
 export const funnelSteps = [
   { label: 'Visits', value: 6842 },
   { label: 'Registrations', value: 1734 },
-  { label: 'Live', value: 801 },
-  { label: 'Replay', value: 492 },
+  { label: 'Live attendees', value: 801 },
+  { label: 'Replay views', value: 492 },
   { label: 'Purchases', value: 72 },
 ] as const;
 
@@ -35,13 +35,14 @@ export const recentSyncRuns = [
 ] as const;
 
 export const navItems = [
-  'Overview',
-  'Acquisition',
-  'Webinars',
-  'Email Nurture',
-  'Revenue',
-  'Lead Debug',
-  'Data Health',
+  { label: 'Overview', icon: '⌂' },
+  { label: 'Acquisition', icon: '⌁' },
+  { label: 'Journey', icon: '⇄' },
+  { label: 'Webinars', icon: '▶' },
+  { label: 'Email Nurture', icon: '✉' },
+  { label: 'Revenue', icon: '$' },
+  { label: 'Lead Debug', icon: '◎' },
+  { label: 'Data Health', icon: '▣' },
 ] as const;
 
 export const identityNotes = [
@@ -57,4 +58,23 @@ export const implementationChecklist = [
   { label: 'Dashboard shell', status: 'Done' },
   { label: 'Real connectors', status: 'Next' },
   { label: 'Attribution snapshots job', status: 'Next' },
+] as const;
+
+export const sourceOverview = [
+  { name: 'Meta Ads', detail: 'Paid social', status: 'Connected' },
+  { name: 'Google Ads', detail: 'Paid search', status: 'Connected' },
+  { name: 'GA4', detail: 'Site analytics', status: 'Connected' },
+  { name: 'Riverside', detail: 'Registration + webinar', status: 'Partial' },
+  { name: 'GetResponse', detail: 'Email nurture', status: 'Delayed' },
+] as const;
+
+export const productUpdates = [
+  {
+    title: 'Identity-first reporting shell is live',
+    body: 'The v1 dashboard now reflects the operating model: email-first stitching, registration as join anchor, and connector health surfaced separately from funnel metrics.',
+  },
+  {
+    title: 'Muted UI direction for internal ops',
+    body: 'This pass keeps the interface softer and more product-like, with less visual noise and more room for future data modules.',
+  },
 ] as const;

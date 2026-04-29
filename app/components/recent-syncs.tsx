@@ -1,25 +1,27 @@
 import { recentSyncRuns } from '../lib/mock-data';
 
 function badgeClass(status: string) {
-  if (status === 'success') return 'bg-emerald-400/10 text-emerald-200';
-  if (status === 'retrying') return 'bg-amber-400/10 text-amber-100';
-  return 'bg-slate-700 text-slate-200';
+  if (status === 'success') return 'bg-emerald-50 text-emerald-700';
+  if (status === 'retrying') return 'bg-amber-50 text-amber-700';
+  return 'bg-stone-200 text-stone-700';
 }
 
 export function RecentSyncs() {
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-6">
+    <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm uppercase tracking-[0.22em] text-slate-500">Sync activity</p>
-          <h2 className="mt-2 text-2xl font-semibold text-white">Recent connector runs</h2>
+          <p className="text-sm font-medium text-stone-500">Sync activity</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-stone-900">Recent connector runs</h2>
         </div>
-        <p className="text-sm text-slate-400">Mocked from connector_sync_runs shape</p>
+        <button className="rounded-full border border-stone-200 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">
+          View all syncs
+        </button>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-white/10">
-        <table className="min-w-full divide-y divide-white/10 text-sm">
-          <thead className="bg-slate-950/70 text-left text-slate-400">
+      <div className="mt-6 overflow-hidden rounded-[24px] border border-stone-200">
+        <table className="min-w-full divide-y divide-stone-200 text-sm">
+          <thead className="bg-stone-50 text-left text-stone-500">
             <tr>
               <th className="px-4 py-3 font-medium">Connector</th>
               <th className="px-4 py-3 font-medium">Source</th>
@@ -28,17 +30,17 @@ export function RecentSyncs() {
               <th className="px-4 py-3 font-medium text-right">Rows</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/10 bg-slate-950/40 text-slate-200">
+          <tbody className="divide-y divide-stone-200 bg-white text-stone-700">
             {recentSyncRuns.map((run) => (
               <tr key={`${run.connector}-${run.startedAt}`}>
-                <td className="px-4 py-3 font-medium">{run.connector}</td>
-                <td className="px-4 py-3 text-slate-400">{run.source}</td>
+                <td className="px-4 py-3 font-medium text-stone-900">{run.connector}</td>
+                <td className="px-4 py-3 text-stone-500">{run.source}</td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2.5 py-1 text-xs ${badgeClass(run.status)}`}>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${badgeClass(run.status)}`}>
                     {run.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-slate-400">{run.startedAt}</td>
+                <td className="px-4 py-3 text-stone-500">{run.startedAt}</td>
                 <td className="px-4 py-3 text-right">{run.rows.toLocaleString()}</td>
               </tr>
             ))}

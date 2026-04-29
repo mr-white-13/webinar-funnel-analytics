@@ -2,17 +2,14 @@ import { overviewCards } from '../lib/mock-data';
 
 export function OverviewCards() {
   return (
-    <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {overviewCards.map((card) => {
-        const toneClass = card.tone === 'positive' ? 'text-emerald-300' : 'text-slate-300';
+        const toneClass = card.tone === 'positive' ? 'text-emerald-700' : 'text-stone-500';
 
         return (
-          <div
-            key={card.label}
-            className="rounded-2xl border border-white/10 bg-slate-900/70 p-5 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]"
-          >
-            <div className="text-sm text-slate-400">{card.label}</div>
-            <div className="mt-2 text-2xl font-semibold text-white">{card.value}</div>
+          <div key={card.label} className="rounded-[24px] border border-stone-200 bg-white p-5 shadow-sm">
+            <div className="text-sm text-stone-500">{card.label}</div>
+            <div className="mt-2 text-3xl font-semibold tracking-tight text-stone-900">{card.value}</div>
             <div className={`mt-2 text-sm ${toneClass}`}>{card.change} vs previous webinar</div>
           </div>
         );
