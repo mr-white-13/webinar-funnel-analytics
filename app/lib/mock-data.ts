@@ -63,7 +63,7 @@ export const implementationChecklist = [
 export const sourceOverview = [
   { name: 'Meta Ads', detail: 'Paid social', status: 'Connected' },
   { name: 'Google Ads', detail: 'Paid search', status: 'Connected' },
-  { name: 'GA4', detail: 'Site analytics', status: 'Connected' },
+  { name: 'GA4', detail: 'OAuth scaffold ready for property 224720340', status: 'Partial' },
   { name: 'Riverside', detail: 'Registration + webinar', status: 'Partial' },
   { name: 'GetResponse', detail: 'Email nurture', status: 'Delayed' },
 ] as const;
