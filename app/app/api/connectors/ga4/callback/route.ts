@@ -1,6 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeGa4Code, fetchGa4ConnectionTest } from '../../../../../lib/ga4';
 
+function serializeError(error: unknown) {
+  if (error instanceof Error) {
+    const err = error as Error & {
+      code?: number | string;
+      status?: number | string;
+      details?: string;
+      errors?: unknown;
+      response?: { data?: unknown };
+    };
+
+    return {
+      name: err.name,
+      message: err.message,
+      code: err.code ?? null,
+      status: err.status ?? null,
+      details: err.details ?? null,
+      response: err.response?.data ?? null,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    };
+  }
+
+  if (typeof error === 'object' && error !== null) {
+    return error;
+  }
+
+  return { message: String(error) };
+}
+
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
   const error = request.nextUrl.searchParams.get('error');
@@ -36,7 +64,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         connected: false,
-        error: callbackError instanceof Error ? callbackError.message : 'GA4 callback failed',
+        error: serializeError(callbackError),
       },
       { status: 500 },
     );
