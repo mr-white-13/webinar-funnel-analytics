@@ -1,12 +1,37 @@
-import { BetaAnalyticsDataClient } from '@google-analytics/data';
 import { OAuth2Client } from 'google-auth-library';
 
 const GA_SCOPE = ['https://www.googleapis.com/auth/analytics.readonly'];
+const GA4_API_BASE = 'https://analyticsdata.googleapis.com/v1beta';
 
 function required(name: string) {
   const value = process.env[name];
   if (!value) throw new Error(`Missing required env var: ${name}`);
   return value;
+}
+
+async function ga4Fetch<T>(path: string, accessToken: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${GA4_API_BASE}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      ...(init?.headers ?? {}),
+    },
+    cache: 'no-store',
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw {
+      name: 'Ga4ApiError',
+      message: `GA4 API request failed with ${response.status}`,
+      status: response.status,
+      response: data,
+    };
+  }
+
+  return data as T;
 }
 
 export function getGa4OauthClient() {
@@ -46,22 +71,28 @@ export async function getOauthTokenInfo(auth: OAuth2Client) {
 
 export async function fetchGa4ConnectionTest(auth: OAuth2Client) {
   const propertyId = required('GA4_PROPERTY_ID');
-  const analyticsData = new BetaAnalyticsDataClient({ authClient: auth });
+  const accessToken = auth.credentials.access_token;
 
-  const metadataResponse = await analyticsData.getMetadata({
-    name: `properties/${propertyId}/metadata`,
+  if (!accessToken) {
+    throw new Error('No access token available for GA4 request');
+  }
+
+  const metadata = await ga4Fetch<{
+    dimensions?: Array<{ apiName?: string }>;
+  }>(`/properties/${propertyId}/metadata`, accessToken);
+
+  const report = await ga4Fetch<{
+    rowCount?: number;
+    rows?: unknown[];
+  }>(`/properties/${propertyId}:runReport`, accessToken, {
+    method: 'POST',
+    body: JSON.stringify({
+      dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+      dimensions: [{ name: 'date' }, { name: 'sessionDefaultChannelGroup' }],
+      metrics: [{ name: 'sessions' }, { name: 'totalUsers' }],
+      limit: 10,
+    }),
   });
-
-  const reportResponse = await analyticsData.runReport({
-    property: `properties/${propertyId}`,
-    dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
-    dimensions: [{ name: 'date' }, { name: 'sessionDefaultChannelGroup' }],
-    metrics: [{ name: 'sessions' }, { name: 'totalUsers' }],
-    limit: 10,
-  });
-
-  const report = reportResponse[0];
-  const metadata = metadataResponse[0];
 
   return {
     propertyId,
