@@ -1,13 +1,31 @@
-import { connectorHealth, sourceOverview } from '../lib/mock-data';
+interface ConnectorHealthItem {
+  name: string;
+  status: string;
+  lastSync: string;
+  rows: string;
+  lag: string;
+}
+
+interface SourceOverviewItem {
+  name: string;
+  detail: string;
+  status: string;
+}
 
 function statusClass(status: string) {
   if (status === 'Healthy' || status === 'Connected') return 'bg-emerald-50 text-emerald-700';
   if (status === 'Delayed') return 'bg-rose-50 text-rose-700';
-  if (status === 'Partial') return 'bg-amber-50 text-amber-700';
+  if (status === 'Partial' || status === 'Watch') return 'bg-amber-50 text-amber-700';
   return 'bg-stone-100 text-stone-700';
 }
 
-export function ConnectorHealth() {
+export function ConnectorHealth({
+  connectorHealth,
+  sourceOverview,
+}: {
+  connectorHealth: readonly ConnectorHealthItem[];
+  sourceOverview: readonly SourceOverviewItem[];
+}) {
   return (
     <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
       <div className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm">

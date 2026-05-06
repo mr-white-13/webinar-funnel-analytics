@@ -37,18 +37,22 @@ Once env vars are set:
    - `/api/connectors/ga4/callback`
 5. A JSON payload confirms connection and returns a small GA4 report preview
 
-## What this scaffold does
+## What this scaffold now does
 - starts OAuth flow
 - exchanges the auth code for tokens
+- persists GA4 connector runtime state locally for dev/internal use
+- stores the GA4 refresh token in local runtime storage
 - runs a GA4 Data API test query
-- proves property access works
+- exposes a manual sync route at `/api/connectors/ga4/sync`
+- stores a dashboard-ready GA4 summary snapshot
+- powers parts of the dashboard with real GA4 data when a sync exists
 
 ## What still needs to be built
-- secure token storage
-- refresh-token persistence
-- scheduled sync job
+- move connector state from local runtime file store to shared database storage
+- scheduled sync job / cron
 - normalization into `touchpoints` / daily aggregates
-- connector status UI backed by real state
+- source-to-source identity joins with registration/CRM data
+- additional source connectors following the same pattern
 
 ## Security note
 Do not paste OAuth secrets into screenshots or public repos. Rotate credentials if they were exposed in chat.

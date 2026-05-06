@@ -4,4 +4,5 @@ app/out/
 app/.vercel/
 app/.env
 app/.env.local
+app/.data/
 *.log

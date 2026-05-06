@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { exchangeGa4Code, fetchGa4ConnectionTest, getOauthTokenInfo } from '../../../../../lib/ga4';
+import { exchangeGa4Code, fetchGa4ConnectionTest, refreshAccessToken } from '../../../../../lib/ga4';
+import { addSyncRun, upsertConnectorState } from '../../../../../lib/connector-store';
 
 function serializeError(error: unknown) {
   if (error instanceof Error) {
@@ -7,8 +8,7 @@ function serializeError(error: unknown) {
       code?: number | string;
       status?: number | string;
       details?: string;
-      errors?: unknown;
-      response?: { data?: unknown };
+      response?: unknown;
     };
 
     return {
@@ -17,8 +17,7 @@ function serializeError(error: unknown) {
       code: err.code ?? null,
       status: err.status ?? null,
       details: err.details ?? null,
-      response: err.response?.data ?? null,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+      response: err.response ?? null,
     };
   }
 
@@ -43,50 +42,65 @@ export async function GET(request: NextRequest) {
 
   try {
     const { oauth2Client, tokens } = await exchangeGa4Code(code);
-    const oauthTokenInfo = await getOauthTokenInfo(oauth2Client);
+    const propertyId = process.env.GA4_PROPERTY_ID ?? null;
 
-    try {
-      const test = await fetchGa4ConnectionTest(oauth2Client);
-
-      return NextResponse.json({
-        connected: true,
-        propertyId: test.propertyId,
-        tokenInfo: {
-          hasAccessToken: Boolean(tokens.access_token),
-          hasRefreshToken: Boolean(tokens.refresh_token),
-          expiryDate: tokens.expiry_date ?? null,
-          scope: tokens.scope ?? null,
-        },
-        oauthTokenInfo,
-        reportPreview: test.rows.slice(0, 5),
-        rowCount: test.rowCount,
-        metadataSample: test.metadataSample,
-        nextStep:
-          'Store the refresh token securely and use it for scheduled GA4 sync jobs. Do not expose tokens in the browser in production.',
-      });
-    } catch (ga4Error) {
+    if (!tokens.refresh_token) {
       return NextResponse.json(
         {
           connected: false,
-          stage: 'ga4-query',
-          propertyId: process.env.GA4_PROPERTY_ID ?? null,
-          tokenInfo: {
-            hasAccessToken: Boolean(tokens.access_token),
-            hasRefreshToken: Boolean(tokens.refresh_token),
-            expiryDate: tokens.expiry_date ?? null,
-            scope: tokens.scope ?? null,
-          },
-          oauthTokenInfo,
-          error: serializeError(ga4Error),
+          stage: 'oauth-exchange',
+          error: 'No refresh token returned from Google. Reconnect with prompt=consent if needed.',
         },
         { status: 500 },
       );
     }
+
+    const refreshedClient = await refreshAccessToken(tokens.refresh_token);
+    const test = await fetchGa4ConnectionTest(refreshedClient);
+
+    await upsertConnectorState('ga4', {
+      status: 'connected',
+      connectedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      lastError: null,
+      config: {
+        propertyId: propertyId ?? test.propertyId,
+        redirectUri: process.env.GOOGLE_REDIRECT_URI ?? null,
+      },
+      secrets: {
+        refreshToken: tokens.refresh_token,
+      },
+    });
+
+    await addSyncRun({
+      id: `ga4-connect-${Date.now()}`,
+      source: 'ga4',
+      startedAt: new Date().toISOString(),
+      finishedAt: new Date().toISOString(),
+      status: 'success',
+      rows: test.rowCount,
+      summary: `GA4 connection verified for property ${test.propertyId}`,
+      error: null,
+    });
+
+    return NextResponse.json({
+      connected: true,
+      propertyId: test.propertyId,
+      rowCount: test.rowCount,
+      metadataSample: test.metadataSample,
+      message: 'GA4 connector saved. Next step: trigger /api/connectors/ga4/sync to store dashboard data.',
+    });
   } catch (callbackError) {
+    await upsertConnectorState('ga4', {
+      status: 'error',
+      updatedAt: new Date().toISOString(),
+      lastError: JSON.stringify(serializeError(callbackError)),
+    });
+
     return NextResponse.json(
       {
         connected: false,
-        stage: 'oauth-exchange',
+        stage: 'ga4-connect',
         error: serializeError(callbackError),
       },
       { status: 500 },

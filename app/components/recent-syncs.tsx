@@ -1,12 +1,18 @@
-import { recentSyncRuns } from '../lib/mock-data';
+interface RecentSyncRunItem {
+  connector: string;
+  source: string;
+  status: string;
+  startedAt: string;
+  rows: number;
+}
 
 function badgeClass(status: string) {
   if (status === 'success') return 'bg-emerald-50 text-emerald-700';
-  if (status === 'retrying') return 'bg-amber-50 text-amber-700';
+  if (status === 'retrying' || status === 'running') return 'bg-amber-50 text-amber-700';
   return 'bg-stone-200 text-stone-700';
 }
 
-export function RecentSyncs() {
+export function RecentSyncs({ runs }: { runs: readonly RecentSyncRunItem[] }) {
   return (
     <section className="rounded-[28px] border border-stone-200 bg-white p-6 shadow-sm">
       <div className="flex items-end justify-between gap-4">
@@ -31,7 +37,7 @@ export function RecentSyncs() {
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-200 bg-white text-stone-700">
-            {recentSyncRuns.map((run) => (
+            {runs.map((run) => (
               <tr key={`${run.connector}-${run.startedAt}`}>
                 <td className="px-4 py-3 font-medium text-stone-900">{run.connector}</td>
                 <td className="px-4 py-3 text-stone-500">{run.source}</td>
