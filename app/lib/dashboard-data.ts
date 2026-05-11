@@ -5,6 +5,7 @@ import {
   sourceOverview as mockSourceOverview,
 } from './mock-data';
 import { getGa4Summary, getGetResponseSummary, getGoogleAdsSummary, getMetaSummary, getConnectorState, listSyncRuns } from './connector-store';
+import { getLatestRegistrationImport } from './registration-import';
 
 type DashboardOverviewCard = {
   label: string;
@@ -37,21 +38,35 @@ function shortTime(iso: string) {
 }
 
 export async function getDashboardData() {
-  const [ga4Summary, metaSummary, googleAdsSummary, getResponseSummary, ga4Connector, metaConnector, googleAdsConnector, getResponseConnector, syncRuns] = await Promise.all([
+  const [
+    ga4Summary,
+    metaSummary,
+    googleAdsSummary,
+    getResponseSummary,
+    latestRegistrationImport,
+    ga4Connector,
+    metaConnector,
+    googleAdsConnector,
+    getResponseConnector,
+    manualRegistrationsConnector,
+    syncRuns,
+  ] = await Promise.all([
     getGa4Summary(),
     getMetaSummary(),
     getGoogleAdsSummary(),
     getGetResponseSummary(),
+    getLatestRegistrationImport(),
     getConnectorState('ga4'),
     getConnectorState('meta'),
     getConnectorState('google-ads'),
     getConnectorState('getresponse'),
+    getConnectorState('manual-registrations'),
     listSyncRuns(),
   ]);
 
   let overviewCards: DashboardOverviewCard[] = mockOverviewCards.map((card) => ({ ...card }));
 
-  if (ga4Summary || metaSummary || googleAdsSummary || getResponseSummary) {
+  if (ga4Summary || metaSummary || googleAdsSummary || getResponseSummary || latestRegistrationImport) {
     overviewCards = [
       {
         label: 'Sessions',
@@ -66,9 +81,9 @@ export async function getDashboardData() {
         tone: 'neutral',
       },
       {
-        label: 'Paid clicks',
-        value: formatNumber((metaSummary?.totals.clicks ?? 0) + (googleAdsSummary?.totals.clicks ?? 0)),
-        change: 'Meta + Google Ads',
+        label: 'Registrations',
+        value: latestRegistrationImport ? formatNumber(latestRegistrationImport.totalRegistrants) : mockOverviewCards[2].value,
+        change: latestRegistrationImport ? 'Manual Riverside import' : mockOverviewCards[2].change,
         tone: 'positive',
       },
       {
@@ -212,6 +227,8 @@ export async function getDashboardData() {
     metaSummary,
     googleAdsSummary,
     getResponseSummary,
+    latestRegistrationImport,
+    manualRegistrationsConnector,
     overviewCards,
     connectorHealth,
     sourceOverview,
