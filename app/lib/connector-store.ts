@@ -77,11 +77,34 @@ export interface MetaSummaryRecord {
   }>;
 }
 
+export interface GoogleAdsSummaryRecord {
+  customerId: string;
+  syncedAt: string;
+  dateRange: { startDate: string; endDate: string };
+  totals: {
+    costMicros: number;
+    cost: number;
+    impressions: number;
+    clicks: number;
+    conversions: number;
+  };
+  campaigns: Array<{
+    campaignId: string;
+    campaignName: string;
+    costMicros: number;
+    cost: number;
+    impressions: number;
+    clicks: number;
+    conversions: number;
+  }>;
+}
+
 interface RuntimeStore {
   connectors: Record<string, ConnectorState>;
   syncRuns: SyncRunRecord[];
   ga4Summary: Ga4SummaryRecord | null;
   metaSummary: MetaSummaryRecord | null;
+  googleAdsSummary: GoogleAdsSummaryRecord | null;
 }
 
 const DATA_DIR = path.join(process.cwd(), '.data');
@@ -92,6 +115,7 @@ const defaultStore = (): RuntimeStore => ({
   syncRuns: [],
   ga4Summary: null,
   metaSummary: null,
+  googleAdsSummary: null,
 });
 
 async function ensureStoreFile() {
@@ -180,4 +204,15 @@ export async function saveMetaSummary(summary: MetaSummaryRecord) {
 export async function getMetaSummary() {
   const store = await readStore();
   return store.metaSummary;
+}
+
+export async function saveGoogleAdsSummary(summary: GoogleAdsSummaryRecord) {
+  const store = await readStore();
+  store.googleAdsSummary = summary;
+  await writeStore(store);
+}
+
+export async function getGoogleAdsSummary() {
+  const store = await readStore();
+  return store.googleAdsSummary;
 }

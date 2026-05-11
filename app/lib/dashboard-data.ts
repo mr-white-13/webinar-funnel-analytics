@@ -4,7 +4,7 @@ import {
   recentSyncRuns as mockRecentSyncRuns,
   sourceOverview as mockSourceOverview,
 } from './mock-data';
-import { getGa4Summary, getMetaSummary, getConnectorState, listSyncRuns } from './connector-store';
+import { getGa4Summary, getGoogleAdsSummary, getMetaSummary, getConnectorState, listSyncRuns } from './connector-store';
 
 type DashboardOverviewCard = {
   label: string;
@@ -37,17 +37,19 @@ function shortTime(iso: string) {
 }
 
 export async function getDashboardData() {
-  const [ga4Summary, metaSummary, ga4Connector, metaConnector, syncRuns] = await Promise.all([
+  const [ga4Summary, metaSummary, googleAdsSummary, ga4Connector, metaConnector, googleAdsConnector, syncRuns] = await Promise.all([
     getGa4Summary(),
     getMetaSummary(),
+    getGoogleAdsSummary(),
     getConnectorState('ga4'),
     getConnectorState('meta'),
+    getConnectorState('google-ads'),
     listSyncRuns(),
   ]);
 
   let overviewCards: DashboardOverviewCard[] = mockOverviewCards.map((card) => ({ ...card }));
 
-  if (ga4Summary || metaSummary) {
+  if (ga4Summary || metaSummary || googleAdsSummary) {
     overviewCards = [
       {
         label: 'Sessions',
@@ -56,16 +58,16 @@ export async function getDashboardData() {
         tone: ga4Summary ? 'neutral' : mockOverviewCards[1].tone,
       },
       {
-        label: 'Spend',
-        value: metaSummary ? formatCurrency(metaSummary.totals.spend) : mockOverviewCards[0].value,
-        change: metaSummary ? 'Last 30 days' : mockOverviewCards[0].change,
-        tone: metaSummary ? 'neutral' : mockOverviewCards[0].tone,
+        label: 'Paid spend',
+        value: formatCurrency((metaSummary?.totals.spend ?? 0) + (googleAdsSummary?.totals.cost ?? 0)),
+        change: 'Meta + Google Ads',
+        tone: 'neutral',
       },
       {
-        label: 'Clicks',
-        value: metaSummary ? formatNumber(metaSummary.totals.clicks) : mockOverviewCards[2].value,
-        change: metaSummary ? 'Live Meta data' : mockOverviewCards[2].change,
-        tone: metaSummary ? 'positive' : mockOverviewCards[2].tone,
+        label: 'Paid clicks',
+        value: formatNumber((metaSummary?.totals.clicks ?? 0) + (googleAdsSummary?.totals.clicks ?? 0)),
+        change: 'Meta + Google Ads',
+        tone: 'positive',
       },
       {
         label: 'Users',
@@ -112,6 +114,23 @@ export async function getDashboardData() {
       };
     }
 
+    if (item.name === 'Google Ads') {
+      return {
+        ...item,
+        status:
+          googleAdsConnector?.status === 'connected'
+            ? 'Healthy'
+            : googleAdsConnector?.status === 'syncing'
+              ? 'Watch'
+              : googleAdsConnector?.status === 'error'
+                ? 'Delayed'
+                : 'Watch',
+        lastSync: relativeTime(googleAdsConnector?.lastSyncAt ?? googleAdsConnector?.connectedAt ?? null),
+        rows: googleAdsSummary ? `${formatNumber(googleAdsSummary.totals.clicks)} clicks` : 'Awaiting sync',
+        lag: googleAdsSummary ? 'Manual sync' : 'Connect + sync',
+      };
+    }
+
     return item;
   });
 
@@ -136,6 +155,16 @@ export async function getDashboardData() {
       };
     }
 
+    if (item.name === 'Google Ads') {
+      return {
+        ...item,
+        detail: googleAdsSummary
+          ? `Customer ${googleAdsSummary.customerId} synced ${relativeTime(googleAdsSummary.syncedAt)}`
+          : 'OAuth ready; run first sync',
+        status: googleAdsSummary ? 'Connected' : googleAdsConnector?.status === 'connected' ? 'Partial' : 'Partial',
+      };
+    }
+
     return item;
   });
 
@@ -152,6 +181,7 @@ export async function getDashboardData() {
   return {
     ga4Summary,
     metaSummary,
+    googleAdsSummary,
     overviewCards,
     connectorHealth,
     sourceOverview,
