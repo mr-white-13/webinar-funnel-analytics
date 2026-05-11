@@ -1,9 +1,13 @@
 import { AcquisitionStageBoard } from '../../components/acquisition-stage-board';
+import { AcquisitionSummary } from '../../components/acquisition-summary';
 import { FunnelStageMetrics } from '../../components/funnel-stage-metrics';
 import { Sidebar } from '../../components/sidebar';
 import { Topbar } from '../../components/topbar';
+import { getAcquisitionData } from '../../lib/acquisition-data';
 
-export default function AcquisitionPage() {
+export default async function AcquisitionPage() {
+  const acquisitionData = await getAcquisitionData();
+
   return (
     <main className="min-h-screen bg-[#f5f2ec] text-stone-900">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
@@ -13,10 +17,11 @@ export default function AcquisitionPage() {
             <Topbar
               eyebrow="Acquisition"
               title="Webinar acquisition funnel"
-              subtitle="Map each stage from paid traffic to registration, nurture, attendance, and conversion output."
+              subtitle="See the count at each stage from traffic source through registration, attendance, and LMS action."
             />
-            <FunnelStageMetrics />
-            <AcquisitionStageBoard />
+            <AcquisitionSummary biggestLeak={acquisitionData.biggestLeak} />
+            <FunnelStageMetrics stages={acquisitionData.stages} />
+            <AcquisitionStageBoard stages={acquisitionData.stages} />
           </div>
         </div>
       </div>
