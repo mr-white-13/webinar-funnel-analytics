@@ -20,7 +20,7 @@ export default async function HomePage() {
             <Topbar />
             <OverviewCards cards={dashboardData.overviewCards} />
             <FunnelPanel />
-            <Ga4Panel summary={dashboardData.ga4Summary} />
+            <Ga4Panel summary={dashboardData.ga4Summary} metaSummary={dashboardData.metaSummary} />
             <ConnectorHealth
               connectorHealth={dashboardData.connectorHealth}
               sourceOverview={dashboardData.sourceOverview}

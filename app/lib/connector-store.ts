@@ -57,10 +57,31 @@ export interface Ga4SummaryRecord {
   }>;
 }
 
+export interface MetaSummaryRecord {
+  adAccountId: string;
+  syncedAt: string;
+  dateRange: { since: string; until: string };
+  totals: {
+    spend: number;
+    impressions: number;
+    clicks: number;
+    reach: number;
+  };
+  campaigns: Array<{
+    campaignId: string;
+    campaignName: string;
+    spend: number;
+    impressions: number;
+    clicks: number;
+    reach: number;
+  }>;
+}
+
 interface RuntimeStore {
   connectors: Record<string, ConnectorState>;
   syncRuns: SyncRunRecord[];
   ga4Summary: Ga4SummaryRecord | null;
+  metaSummary: MetaSummaryRecord | null;
 }
 
 const DATA_DIR = path.join(process.cwd(), '.data');
@@ -70,6 +91,7 @@ const defaultStore = (): RuntimeStore => ({
   connectors: {},
   syncRuns: [],
   ga4Summary: null,
+  metaSummary: null,
 });
 
 async function ensureStoreFile() {
@@ -147,4 +169,15 @@ export async function saveGa4Summary(summary: Ga4SummaryRecord) {
 export async function getGa4Summary() {
   const store = await readStore();
   return store.ga4Summary;
+}
+
+export async function saveMetaSummary(summary: MetaSummaryRecord) {
+  const store = await readStore();
+  store.metaSummary = summary;
+  await writeStore(store);
+}
+
+export async function getMetaSummary() {
+  const store = await readStore();
+  return store.metaSummary;
 }
