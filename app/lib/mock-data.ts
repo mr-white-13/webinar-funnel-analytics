@@ -66,6 +66,7 @@ export const sourceOverview = [
   { name: 'GA4', detail: 'OAuth scaffold ready for property 224720340', status: 'Partial' },
   { name: 'Riverside', detail: 'Registration + webinar', status: 'Partial' },
   { name: 'GetResponse', detail: 'Email nurture', status: 'Delayed' },
+  { name: 'Thinkific', detail: 'Course enrollments', status: 'Partial' },
 ] as const;
 
 export const productUpdates = [

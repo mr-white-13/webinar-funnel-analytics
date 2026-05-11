@@ -4,7 +4,15 @@ import {
   recentSyncRuns as mockRecentSyncRuns,
   sourceOverview as mockSourceOverview,
 } from './mock-data';
-import { getGa4Summary, getGetResponseSummary, getGoogleAdsSummary, getMetaSummary, getConnectorState, listSyncRuns } from './connector-store';
+import {
+  getGa4Summary,
+  getGetResponseSummary,
+  getGoogleAdsSummary,
+  getMetaSummary,
+  getThinkificSummary,
+  getConnectorState,
+  listSyncRuns,
+} from './connector-store';
 import { getLatestRegistrationImport } from './registration-import';
 
 type DashboardOverviewCard = {
@@ -43,11 +51,13 @@ export async function getDashboardData() {
     metaSummary,
     googleAdsSummary,
     getResponseSummary,
+    thinkificSummary,
     latestRegistrationImport,
     ga4Connector,
     metaConnector,
     googleAdsConnector,
     getResponseConnector,
+    thinkificConnector,
     manualRegistrationsConnector,
     syncRuns,
   ] = await Promise.all([
@@ -55,18 +65,20 @@ export async function getDashboardData() {
     getMetaSummary(),
     getGoogleAdsSummary(),
     getGetResponseSummary(),
+    getThinkificSummary(),
     getLatestRegistrationImport(),
     getConnectorState('ga4'),
     getConnectorState('meta'),
     getConnectorState('google-ads'),
     getConnectorState('getresponse'),
+    getConnectorState('thinkific'),
     getConnectorState('manual-registrations'),
     listSyncRuns(),
   ]);
 
   let overviewCards: DashboardOverviewCard[] = mockOverviewCards.map((card) => ({ ...card }));
 
-  if (ga4Summary || metaSummary || googleAdsSummary || getResponseSummary || latestRegistrationImport) {
+  if (ga4Summary || metaSummary || googleAdsSummary || getResponseSummary || latestRegistrationImport || thinkificSummary) {
     overviewCards = [
       {
         label: 'Sessions',
@@ -87,10 +99,10 @@ export async function getDashboardData() {
         tone: 'positive',
       },
       {
-        label: 'List contacts',
-        value: getResponseSummary ? formatNumber(getResponseSummary.totals.contactsInPrimaryCampaign) : mockOverviewCards[3].value,
-        change: getResponseSummary ? 'Primary webinar list' : mockOverviewCards[3].change,
-        tone: getResponseSummary ? 'positive' : mockOverviewCards[3].tone,
+        label: 'Enrollments',
+        value: thinkificSummary ? formatNumber(thinkificSummary.totals.enrollments) : mockOverviewCards[3].value,
+        change: thinkificSummary ? 'Thinkific live data' : mockOverviewCards[3].change,
+        tone: thinkificSummary ? 'positive' : mockOverviewCards[3].tone,
       },
       ...mockOverviewCards.slice(4),
     ];
@@ -165,6 +177,23 @@ export async function getDashboardData() {
       };
     }
 
+    if (item.name === 'Thinkific') {
+      return {
+        ...item,
+        status:
+          thinkificConnector?.status === 'connected'
+            ? 'Healthy'
+            : thinkificConnector?.status === 'syncing'
+              ? 'Watch'
+              : thinkificConnector?.status === 'error'
+                ? 'Delayed'
+                : 'Watch',
+        lastSync: relativeTime(thinkificConnector?.lastSyncAt ?? thinkificConnector?.connectedAt ?? null),
+        rows: thinkificSummary ? `${formatNumber(thinkificSummary.totals.enrollments)} enrollments` : 'Awaiting sync',
+        lag: thinkificSummary ? 'Manual sync' : 'Connect + sync',
+      };
+    }
+
     return item;
   });
 
@@ -227,6 +256,7 @@ export async function getDashboardData() {
     metaSummary,
     googleAdsSummary,
     getResponseSummary,
+    thinkificSummary,
     latestRegistrationImport,
     manualRegistrationsConnector,
     overviewCards,

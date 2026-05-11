@@ -122,6 +122,29 @@ export interface GetResponseSummaryRecord {
   };
 }
 
+export interface ThinkificSummaryRecord {
+  syncedAt: string;
+  siteDomain: string;
+  totals: {
+    courses: number;
+    users: number;
+    enrollments: number;
+  };
+  courses: Array<{
+    id: number;
+    name: string;
+    slug: string | null;
+    enrollmentsCount: number;
+  }>;
+  usersSample: Array<{
+    id: number;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    signInCount: number | null;
+  }>;
+}
+
 interface RuntimeStore {
   connectors: Record<string, ConnectorState>;
   syncRuns: SyncRunRecord[];
@@ -129,6 +152,7 @@ interface RuntimeStore {
   metaSummary: MetaSummaryRecord | null;
   googleAdsSummary: GoogleAdsSummaryRecord | null;
   getResponseSummary: GetResponseSummaryRecord | null;
+  thinkificSummary: ThinkificSummaryRecord | null;
 }
 
 const DATA_DIR = path.join(process.cwd(), '.data');
@@ -141,6 +165,7 @@ const defaultStore = (): RuntimeStore => ({
   metaSummary: null,
   googleAdsSummary: null,
   getResponseSummary: null,
+  thinkificSummary: null,
 });
 
 async function ensureStoreFile() {
@@ -251,4 +276,15 @@ export async function saveGetResponseSummary(summary: GetResponseSummaryRecord) 
 export async function getGetResponseSummary() {
   const store = await readStore();
   return store.getResponseSummary;
+}
+
+export async function saveThinkificSummary(summary: ThinkificSummaryRecord) {
+  const store = await readStore();
+  store.thinkificSummary = summary;
+  await writeStore(store);
+}
+
+export async function getThinkificSummary() {
+  const store = await readStore();
+  return store.thinkificSummary;
 }
