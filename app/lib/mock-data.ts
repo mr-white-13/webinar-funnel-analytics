@@ -35,14 +35,14 @@ export const recentSyncRuns = [
 ] as const;
 
 export const navItems = [
-  { label: 'Overview', icon: '⌂' },
-  { label: 'Acquisition', icon: '⌁' },
-  { label: 'Journey', icon: '⇄' },
-  { label: 'Webinars', icon: '▶' },
-  { label: 'Email Nurture', icon: '✉' },
-  { label: 'Revenue', icon: '$' },
-  { label: 'Lead Debug', icon: '◎' },
-  { label: 'Data Health', icon: '▣' },
+  { label: 'Overview', icon: '⌂', href: '/' },
+  { label: 'Acquisition', icon: '⌁', href: '/acquisition' },
+  { label: 'Journey', icon: '⇄', href: '#' },
+  { label: 'Webinars', icon: '▶', href: '#' },
+  { label: 'Email Nurture', icon: '✉', href: '#' },
+  { label: 'Revenue', icon: '$', href: '#' },
+  { label: 'Lead Debug', icon: '◎', href: '#' },
+  { label: 'Data Health', icon: '▣', href: '#' },
 ] as const;
 
 export const identityNotes = [
@@ -77,5 +77,72 @@ export const productUpdates = [
   {
     title: 'Muted UI direction for internal ops',
     body: 'This pass keeps the interface softer and more product-like, with less visual noise and more room for future data modules.',
+  },
+] as const;
+
+export const acquisitionStages = [
+  {
+    step: '1',
+    title: 'Meta Ads',
+    subtitle: 'Cold + retargeting',
+    note: 'Traffic acquisition',
+    tone: 'blue',
+    systems: ['Meta Ads'],
+  },
+  {
+    step: '2',
+    title: 'Webinar LP',
+    subtitle: 'Registration landing page',
+    note: 'Traffic → registrations',
+    tone: 'indigo',
+    systems: ['GA4', 'Manual Riverside import'],
+  },
+  {
+    step: '3',
+    title: 'Pre-webinar nurture',
+    subtitle: 'Email reminders',
+    note: 'Approved + nurtured',
+    tone: 'amber',
+    systems: ['GetResponse'],
+  },
+  {
+    step: '4',
+    title: 'Live webinar',
+    subtitle: 'Delivery + Q&A',
+    note: 'Attendance quality',
+    tone: 'orange',
+    systems: ['Riverside CSV / future API'],
+  },
+  {
+    step: '5',
+    title: 'LMS registration',
+    subtitle: 'Try page / checkout',
+    note: 'Conversion intent',
+    tone: 'rose',
+    systems: ['Thinkific'],
+  },
+  {
+    step: '6',
+    title: 'Post-reg onboarding',
+    subtitle: 'Welcome + setup',
+    note: 'Activation',
+    tone: 'emerald',
+    systems: ['Thinkific', 'GetResponse'],
+  },
+  {
+    step: '7',
+    title: 'Replay + retargeting',
+    subtitle: 'No-show nurture',
+    note: 'Recovery',
+    tone: 'amber',
+    systems: ['GetResponse', 'Meta Ads'],
+  },
+  {
+    step: '8',
+    title: 'Post-webinar nurture',
+    subtitle: 'Email + community',
+    note: 'Long-tail conversion',
+    tone: 'orange',
+    systems: ['GetResponse'],
   },
 ] as const;

@@ -1,12 +1,18 @@
-export function Topbar() {
+export function Topbar({
+  eyebrow = 'Internal v1',
+  title = 'Webinar funnel analytics',
+  subtitle = 'Funnel health, attribution sanity, and connector trust for webinar growth.',
+}: {
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+}) {
   return (
     <div className="flex flex-col gap-4 rounded-[28px] border border-stone-200 bg-white px-6 py-5 shadow-sm lg:flex-row lg:items-center lg:justify-between">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400">Internal v1</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900">Webinar funnel analytics</h1>
-        <p className="mt-2 text-sm text-stone-500">
-          Funnel health, attribution sanity, and connector trust for webinar growth.
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-stone-400">{eyebrow}</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900">{title}</h1>
+        <p className="mt-2 text-sm text-stone-500">{subtitle}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">

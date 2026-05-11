@@ -1,6 +1,12 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { navItems } from '../lib/mock-data';
 
 export function Sidebar() {
+  const pathname = usePathname();
+
   return (
     <aside className="hidden w-72 shrink-0 border-r border-stone-200 bg-stone-50 xl:flex xl:flex-col">
       <div className="px-6 py-7">
@@ -17,21 +23,37 @@ export function Sidebar() {
 
       <nav className="flex-1 px-4">
         <div className="space-y-1">
-          {navItems.map((item, index) => (
-            <button
-              key={item.label}
-              className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm transition ${
-                index === 0
-                  ? 'bg-white text-stone-900 shadow-sm ring-1 ring-stone-200'
-                  : 'text-stone-600 hover:bg-white hover:text-stone-900'
-              }`}
-            >
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-stone-100 text-stone-600">
-                {item.icon}
-              </span>
-              <span className="font-medium">{item.label}</span>
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const active = item.href !== '#' && pathname === item.href;
+            const content = (
+              <>
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-stone-100 text-stone-600">
+                  {item.icon}
+                </span>
+                <span className="font-medium">{item.label}</span>
+              </>
+            );
+
+            const className = `flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm transition ${
+              active
+                ? 'bg-white text-stone-900 shadow-sm ring-1 ring-stone-200'
+                : 'text-stone-600 hover:bg-white hover:text-stone-900'
+            }`;
+
+            if (item.href === '#') {
+              return (
+                <button key={item.label} className={className} type="button">
+                  {content}
+                </button>
+              );
+            }
+
+            return (
+              <Link key={item.label} href={item.href} className={className}>
+                {content}
+              </Link>
+            );
+          })}
         </div>
       </nav>
 
@@ -40,9 +62,9 @@ export function Sidebar() {
           <div className="text-sm font-medium text-stone-900">Complete onboarding</div>
           <div className="mt-1 text-sm text-stone-500">Essential setup</div>
           <div className="mt-4 h-2 rounded-full bg-stone-100">
-            <div className="h-2 w-1/3 rounded-full bg-stone-400" />
+            <div className="h-2 w-2/3 rounded-full bg-stone-400" />
           </div>
-          <div className="mt-2 text-right text-xs text-stone-500">2 / 6</div>
+          <div className="mt-2 text-right text-xs text-stone-500">6 / 8</div>
         </div>
 
         <div className="mt-4 flex items-center gap-3 rounded-3xl bg-stone-900 px-4 py-4 text-white">
