@@ -99,12 +99,36 @@ export interface GoogleAdsSummaryRecord {
   }>;
 }
 
+export interface GetResponseSummaryRecord {
+  syncedAt: string;
+  accountEmail: string;
+  primaryCampaignId: string | null;
+  primaryCampaignName: string | null;
+  campaigns: Array<{
+    campaignId: string;
+    name: string;
+    contactsCount: number;
+  }>;
+  contactsSample: Array<{
+    contactId: string;
+    email: string;
+    name: string | null;
+    campaignId: string | null;
+    campaignName: string | null;
+  }>;
+  totals: {
+    campaigns: number;
+    contactsInPrimaryCampaign: number;
+  };
+}
+
 interface RuntimeStore {
   connectors: Record<string, ConnectorState>;
   syncRuns: SyncRunRecord[];
   ga4Summary: Ga4SummaryRecord | null;
   metaSummary: MetaSummaryRecord | null;
   googleAdsSummary: GoogleAdsSummaryRecord | null;
+  getResponseSummary: GetResponseSummaryRecord | null;
 }
 
 const DATA_DIR = path.join(process.cwd(), '.data');
@@ -116,6 +140,7 @@ const defaultStore = (): RuntimeStore => ({
   ga4Summary: null,
   metaSummary: null,
   googleAdsSummary: null,
+  getResponseSummary: null,
 });
 
 async function ensureStoreFile() {
@@ -215,4 +240,15 @@ export async function saveGoogleAdsSummary(summary: GoogleAdsSummaryRecord) {
 export async function getGoogleAdsSummary() {
   const store = await readStore();
   return store.googleAdsSummary;
+}
+
+export async function saveGetResponseSummary(summary: GetResponseSummaryRecord) {
+  const store = await readStore();
+  store.getResponseSummary = summary;
+  await writeStore(store);
+}
+
+export async function getGetResponseSummary() {
+  const store = await readStore();
+  return store.getResponseSummary;
 }

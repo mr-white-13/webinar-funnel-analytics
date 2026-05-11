@@ -4,7 +4,7 @@ import {
   recentSyncRuns as mockRecentSyncRuns,
   sourceOverview as mockSourceOverview,
 } from './mock-data';
-import { getGa4Summary, getGoogleAdsSummary, getMetaSummary, getConnectorState, listSyncRuns } from './connector-store';
+import { getGa4Summary, getGetResponseSummary, getGoogleAdsSummary, getMetaSummary, getConnectorState, listSyncRuns } from './connector-store';
 
 type DashboardOverviewCard = {
   label: string;
@@ -37,19 +37,21 @@ function shortTime(iso: string) {
 }
 
 export async function getDashboardData() {
-  const [ga4Summary, metaSummary, googleAdsSummary, ga4Connector, metaConnector, googleAdsConnector, syncRuns] = await Promise.all([
+  const [ga4Summary, metaSummary, googleAdsSummary, getResponseSummary, ga4Connector, metaConnector, googleAdsConnector, getResponseConnector, syncRuns] = await Promise.all([
     getGa4Summary(),
     getMetaSummary(),
     getGoogleAdsSummary(),
+    getGetResponseSummary(),
     getConnectorState('ga4'),
     getConnectorState('meta'),
     getConnectorState('google-ads'),
+    getConnectorState('getresponse'),
     listSyncRuns(),
   ]);
 
   let overviewCards: DashboardOverviewCard[] = mockOverviewCards.map((card) => ({ ...card }));
 
-  if (ga4Summary || metaSummary || googleAdsSummary) {
+  if (ga4Summary || metaSummary || googleAdsSummary || getResponseSummary) {
     overviewCards = [
       {
         label: 'Sessions',
@@ -70,10 +72,10 @@ export async function getDashboardData() {
         tone: 'positive',
       },
       {
-        label: 'Users',
-        value: ga4Summary ? formatNumber(ga4Summary.totals.totalUsers) : mockOverviewCards[3].value,
-        change: ga4Summary ? 'Live GA4 data' : mockOverviewCards[3].change,
-        tone: ga4Summary ? 'positive' : mockOverviewCards[3].tone,
+        label: 'List contacts',
+        value: getResponseSummary ? formatNumber(getResponseSummary.totals.contactsInPrimaryCampaign) : mockOverviewCards[3].value,
+        change: getResponseSummary ? 'Primary webinar list' : mockOverviewCards[3].change,
+        tone: getResponseSummary ? 'positive' : mockOverviewCards[3].tone,
       },
       ...mockOverviewCards.slice(4),
     ];
@@ -131,6 +133,23 @@ export async function getDashboardData() {
       };
     }
 
+    if (item.name === 'GetResponse') {
+      return {
+        ...item,
+        status:
+          getResponseConnector?.status === 'connected'
+            ? 'Healthy'
+            : getResponseConnector?.status === 'syncing'
+              ? 'Watch'
+              : getResponseConnector?.status === 'error'
+                ? 'Delayed'
+                : 'Watch',
+        lastSync: relativeTime(getResponseConnector?.lastSyncAt ?? getResponseConnector?.connectedAt ?? null),
+        rows: getResponseSummary ? `${formatNumber(getResponseSummary.totals.contactsInPrimaryCampaign)} contacts` : 'Awaiting sync',
+        lag: getResponseSummary ? 'Manual sync' : 'Connect + sync',
+      };
+    }
+
     return item;
   });
 
@@ -165,6 +184,16 @@ export async function getDashboardData() {
       };
     }
 
+    if (item.name === 'GetResponse') {
+      return {
+        ...item,
+        detail: getResponseSummary
+          ? `${getResponseSummary.primaryCampaignName ?? 'Primary list'} synced ${relativeTime(getResponseSummary.syncedAt)}`
+          : 'API key ready; run first sync',
+        status: getResponseSummary ? 'Connected' : getResponseConnector?.status === 'connected' ? 'Partial' : 'Partial',
+      };
+    }
+
     return item;
   });
 
@@ -182,6 +211,7 @@ export async function getDashboardData() {
     ga4Summary,
     metaSummary,
     googleAdsSummary,
+    getResponseSummary,
     overviewCards,
     connectorHealth,
     sourceOverview,
