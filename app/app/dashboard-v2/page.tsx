@@ -5,9 +5,9 @@ import { getAcquisitionData } from '../../lib/acquisition-data';
 export default async function DashboardV2Page({
   searchParams,
 }: {
-  searchParams?: Promise<{ range?: string; campaign?: string; country?: string }>;
+  searchParams?: { range?: string; campaign?: string; country?: string };
 }) {
-  const params = (await searchParams) ?? {};
+  const params = searchParams ?? {};
   const dashboardData = await getAcquisitionData({
     range: params.range,
     campaign: params.campaign,
