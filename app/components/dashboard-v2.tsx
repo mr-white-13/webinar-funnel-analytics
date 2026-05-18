@@ -1,3 +1,5 @@
+'use client';
+
 interface FunnelStage {
   key: string;
   label: string;
@@ -7,9 +9,25 @@ interface FunnelStage {
   conversionFromPrev: string | null;
 }
 
+interface FilterOption {
+  value: string;
+  label: string;
+}
+
 interface DashboardV2Props {
   stages: FunnelStage[];
   kpis: Array<{ label: string; value: string; note: string; vsPrevious?: string }>;
+  filters: {
+    range: string;
+    campaign: string;
+    country: string;
+    label: string;
+    options: {
+      range: FilterOption[];
+      campaign: FilterOption[];
+      country: FilterOption[];
+    };
+  };
 }
 
 function barWidth(current: number, max: number) {
@@ -28,7 +46,7 @@ function stageTone(index: number) {
   return tones[index] ?? tones[tones.length - 1];
 }
 
-export function DashboardV2({ stages, kpis }: DashboardV2Props) {
+export function DashboardV2({ stages, kpis, filters }: DashboardV2Props) {
   const maxValue = Math.max(...stages.map((stage) => stage.value), 1);
 
   const chartRows = stages.slice(1).map((stage) => ({
@@ -43,13 +61,34 @@ export function DashboardV2({ stages, kpis }: DashboardV2Props) {
           <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight">Webinar acquisition funnel</h1>
-              <p className="mt-2 text-sm text-white/80">Last 30 days · 1 May - 30 May 2026</p>
+              <p className="mt-2 text-sm text-white/80">{filters.label}</p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <div className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white/90">Last 30 days</div>
-              <div className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white/90">Campaigns</div>
-              <div className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white/90">Countries</div>
-            </div>
+            <form method="GET" className="flex flex-wrap gap-2">
+              <select name="range" defaultValue={filters.range} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white outline-none">
+                {filters.options.range.map((option) => (
+                  <option key={option.value} value={option.value} className="text-stone-900">
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <select name="campaign" defaultValue={filters.campaign} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white outline-none">
+                {filters.options.campaign.map((option) => (
+                  <option key={option.value} value={option.value} className="text-stone-900">
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <select name="country" defaultValue={filters.country} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white outline-none">
+                {filters.options.country.map((option) => (
+                  <option key={option.value} value={option.value} className="text-stone-900">
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <button type="submit" className="rounded-full border border-white/20 bg-white px-4 py-2 text-sm font-medium text-[#096BB2]">
+                Apply
+              </button>
+            </form>
           </div>
         </div>
 
@@ -104,7 +143,7 @@ export function DashboardV2({ stages, kpis }: DashboardV2Props) {
             <div>
               <h2 className="text-xl font-semibold tracking-tight text-[#153A73]">Conversion rate by stage</h2>
             </div>
-            <div className="text-xs text-[#6C88B5]">Last 30 days</div>
+            <div className="text-xs text-[#6C88B5]">{filters.label}</div>
           </div>
           <div className="mt-5 space-y-4">
             {chartRows.map((row, index) => {

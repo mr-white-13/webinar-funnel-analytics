@@ -2,8 +2,17 @@ import { Sidebar } from '../../components/sidebar';
 import { DashboardV2 } from '../../components/dashboard-v2';
 import { getAcquisitionData } from '../../lib/acquisition-data';
 
-export default async function DashboardV2Page() {
-  const dashboardData = await getAcquisitionData();
+export default async function DashboardV2Page({
+  searchParams,
+}: {
+  searchParams?: Promise<{ range?: string; campaign?: string; country?: string }>;
+}) {
+  const params = (await searchParams) ?? {};
+  const dashboardData = await getAcquisitionData({
+    range: params.range,
+    campaign: params.campaign,
+    country: params.country,
+  });
 
   const kpis = [
     {
@@ -16,25 +25,25 @@ export default async function DashboardV2Page() {
     },
     {
       label: 'Landing visits',
-      value: (dashboardData.ga4Summary?.totals.sessions ?? 0).toLocaleString(),
+      value: (dashboardData.stages[1]?.value ?? 0).toLocaleString(),
       note: 'GA4 sessions',
       vsPrevious: '+8% vs previous period',
     },
     {
       label: 'Registrations',
-      value: dashboardData.stages[2]?.value.toLocaleString() ?? '0',
+      value: (dashboardData.stages[2]?.value ?? 0).toLocaleString(),
       note: 'Riverside import',
       vsPrevious: '+6% vs previous period',
     },
     {
       label: 'Attended',
-      value: dashboardData.stages[3]?.value.toLocaleString() ?? '0',
+      value: (dashboardData.stages[3]?.value ?? 0).toLocaleString(),
       note: 'Live attendance',
       vsPrevious: '+4% vs previous period',
     },
     {
       label: 'Enrollments',
-      value: dashboardData.stages[4]?.value.toLocaleString() ?? '0',
+      value: (dashboardData.stages[4]?.value ?? 0).toLocaleString(),
       note: 'Thinkific LMS',
       vsPrevious: '+3% vs previous period',
     },
@@ -51,7 +60,7 @@ export default async function DashboardV2Page() {
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
         <Sidebar />
         <div className="min-w-0 flex-1 px-4 py-4 sm:px-6 sm:py-6 xl:px-8">
-          <DashboardV2 stages={dashboardData.stages} kpis={kpis} />
+          <DashboardV2 stages={dashboardData.stages} kpis={kpis} filters={dashboardData.filters} />
         </div>
       </div>
     </main>
