@@ -7,9 +7,9 @@ export const dynamic = 'force-dynamic';
 export default async function DashboardV2Page({
   searchParams,
 }: {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = searchParams ?? {};
+  const params = (await searchParams) ?? {};
   const range = typeof params.range === 'string' ? params.range : undefined;
   const campaign = typeof params.campaign === 'string' ? params.campaign : undefined;
   const country = typeof params.country === 'string' ? params.country : undefined;
