@@ -1,7 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
 interface FunnelStage {
   key: string;
@@ -80,13 +79,19 @@ function stageTone(index: number) {
 }
 
 export function DashboardV2({ stages, kpis, filters }: DashboardV2Props) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [range, setRange] = useState(filters.range);
+  const [campaign, setCampaign] = useState(filters.campaign);
+  const [country, setCountry] = useState(filters.country);
 
-  const range = searchParams.get('range') ?? filters.range;
-  const campaign = searchParams.get('campaign') ?? filters.campaign;
-  const country = searchParams.get('country') ?? filters.country;
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const rangeParam = params.get('range');
+    const campaignParam = params.get('campaign');
+    const countryParam = params.get('country');
+    if (rangeParam) setRange(rangeParam);
+    if (campaignParam) setCampaign(campaignParam);
+    if (countryParam) setCountry(countryParam);
+  }, []);
 
   const filteredStages = useMemo(() => {
     return stages.map((stage) => ({
@@ -123,10 +128,20 @@ export function DashboardV2({ stages, kpis, filters }: DashboardV2Props) {
 
   const dateLabel = rangeMeta[range]?.label ?? filters.label;
 
-  function updateParam(name: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(name, value);
-    router.replace(`${pathname}?${params.toString()}`);
+  function applyFilters(next: { range?: string; campaign?: string; country?: string }) {
+    const nextRange = next.range ?? range;
+    const nextCampaign = next.campaign ?? campaign;
+    const nextCountry = next.country ?? country;
+
+    setRange(nextRange);
+    setCampaign(nextCampaign);
+    setCountry(nextCountry);
+
+    const params = new URLSearchParams(window.location.search);
+    params.set('range', nextRange);
+    params.set('campaign', nextCampaign);
+    params.set('country', nextCountry);
+    window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
   }
 
   return (
@@ -139,21 +154,21 @@ export function DashboardV2({ stages, kpis, filters }: DashboardV2Props) {
               <p className="mt-2 text-sm text-white/80">{dateLabel}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <select value={range} onChange={(e) => updateParam('range', e.target.value)} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white outline-none">
+              <select value={range} onChange={(e) => applyFilters({ range: e.target.value })} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white outline-none">
                 {filters.options.range.map((option) => (
                   <option key={option.value} value={option.value} className="text-stone-900">
                     {option.label}
                   </option>
                 ))}
               </select>
-              <select value={campaign} onChange={(e) => updateParam('campaign', e.target.value)} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white outline-none">
+              <select value={campaign} onChange={(e) => applyFilters({ campaign: e.target.value })} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white outline-none">
                 {filters.options.campaign.map((option) => (
                   <option key={option.value} value={option.value} className="text-stone-900">
                     {option.label}
                   </option>
                 ))}
               </select>
-              <select value={country} onChange={(e) => updateParam('country', e.target.value)} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white outline-none">
+              <select value={country} onChange={(e) => applyFilters({ country: e.target.value })} className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white outline-none">
                 {filters.options.country.map((option) => (
                   <option key={option.value} value={option.value} className="text-stone-900">
                     {option.label}
