@@ -2,16 +2,22 @@ import { Sidebar } from '../../components/sidebar';
 import { DashboardV2 } from '../../components/dashboard-v2';
 import { getAcquisitionData } from '../../lib/acquisition-data';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardV2Page({
   searchParams,
 }: {
-  searchParams?: { range?: string; campaign?: string; country?: string };
+  searchParams?: Record<string, string | string[] | undefined>;
 }) {
   const params = searchParams ?? {};
+  const range = typeof params.range === 'string' ? params.range : undefined;
+  const campaign = typeof params.campaign === 'string' ? params.campaign : undefined;
+  const country = typeof params.country === 'string' ? params.country : undefined;
+
   const dashboardData = await getAcquisitionData({
-    range: params.range,
-    campaign: params.campaign,
-    country: params.country,
+    range,
+    campaign,
+    country,
   });
 
   const kpis = [
