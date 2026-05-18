@@ -2,23 +2,8 @@ import { Sidebar } from '../../components/sidebar';
 import { DashboardV2 } from '../../components/dashboard-v2';
 import { getAcquisitionData } from '../../lib/acquisition-data';
 
-export const dynamic = 'force-dynamic';
-
-export default async function DashboardV2Page({
-  searchParams,
-}: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const params = (await searchParams) ?? {};
-  const range = typeof params.range === 'string' ? params.range : undefined;
-  const campaign = typeof params.campaign === 'string' ? params.campaign : undefined;
-  const country = typeof params.country === 'string' ? params.country : undefined;
-
-  const dashboardData = await getAcquisitionData({
-    range,
-    campaign,
-    country,
-  });
+export default async function DashboardV2Page() {
+  const dashboardData = await getAcquisitionData();
 
   const kpis = [
     {
